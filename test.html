@@ -17,7 +17,10 @@
         -->
         <form id="form-1804">
             <label>STAN[11]</label><input type="text" id="1804-11" value="007808"/>
-            <label>Function code [24]</label><input type="text" id="1804-24" value="889"/>
+            <label>Function code [24]</label><select id="1804-24">
+                <option>889</option>
+                <option>831</option>
+            </select>
             <label>CID [93]</label><input type="text" id="1804-93" value="638000"/>
             <label>CIO [94]</label><input type="text" id="1804-94" value="630350"/>
             <button id="1804-go">ENVIAR</button>
@@ -66,7 +69,7 @@
             $("#1804-go").click(function(){
                 console.log("Generando el documento");
                 var thetime = getFormatedDateTime(new Date());
-                var additional = "02217"+$("#1804-94").val()+"000000020000";
+                var additional = "02217"+$("#1804-94").val()+"000000020000  ";
                 var msg = { "0" : "1804", 
                             "11": $("#1804-11").val(),
                             "12": thetime,
