@@ -1,0 +1,101 @@
+<html>
+    <head>
+        <title>Tests BiblioEteca -> RedSys</title>
+
+    </head>
+    <body>
+        <h2>Prueba mensaje 1804</h2>
+        <!--
+                Message Type Indicator [0].......................1804
+                Bitmap [1].......................................80300100000100000000000c00000000
+                System Trace Audit Number [11]...................007808
+                Time, Local Transaction [12].....................180918105456
+                Function Code [24]...............................889
+                Additional Data [48].............................02217630350000000020000  
+                Codigo de identificación de destino [93].........638000
+                Codigo de identificación de origen [94]..........630350
+        -->
+        <form id="form-1804">
+            <label>STAN[11]</label><input type="text" id="1804-11" value="007808"/>
+            <label>Function code [24]</label><input type="text" id="1804-24" value="889"/>
+            <label>CID [93]</label><input type="text" id="1804-93" value="638000"/>
+            <label>CIO [94]</label><input type="text" id="1804-94" value="630350"/>
+            <button id="1804-go">ENVIAR</button>
+        </form>
+        <h2>Prueba mensaje 1100</h2>
+        <textarea id="bin-1100" style="width:100%; height:20rem"></textarea>
+        <button id="1100-go">ENVIAR</button>
+        <h2>Respuesta</h2>
+        <textarea id="respuesta" style="width:100%; height:20rem">
+        </textarea>
+        <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+        <script>
+            function padToTwo(number) {
+                 if (number<10) { number = ("0"+number).slice(-2); }
+                return number;
+            }
+
+            function getFormatedDateTime(date) {
+                var day = date.getDate();
+                var monthIndex = date.getMonth();
+                var year = date.getFullYear();
+                var hour = date.getHours();
+                var minute = date.getMinutes();
+                var seconds = date.getSeconds();
+
+                var res = padToTwo(year)+padToTwo(monthIndex+1)+padToTwo(day)+padToTwo(hour)+padToTwo(minute)+padToTwo(seconds);
+                return res;
+            }
+
+            $("#1100-go").click(function(){
+                console.log("Enviando binario");
+                var msg = $("#bin-1100").val();
+                console.log(msg)
+                $.post("http://localhost/redsys/raw",msg)
+                    .done(function(data){
+                        console.log("Done!");
+                        console.log(data);
+                        $("#respuesta").text(JSON.stringify(data.result, null, 4));
+                    })
+                    .fail(function(msg){
+                        console.log("Error: ");
+                        console.log(msg);
+                    });
+                });
+            
+            $("#1804-go").click(function(){
+                console.log("Generando el documento");
+                var thetime = getFormatedDateTime(new Date());
+                var additional = "02217"+$("#1804-94").val()+"000000020000";
+                var msg = { "0" : "1804", 
+                            "11": $("#1804-11").val(),
+                            "12": thetime,
+                            "24": $("#1804-24").val()};
+                if ($("#1804-24").val()=="889") {
+                    msg["48"]=additional;
+                }
+                msg["93"] = $("#1804-93").val();
+                msg["94"] = $("#1804-94").val();
+                console.log("Mensaje: ");
+                console.log(msg);
+                $.ajax ({
+                    url: "http://localhost/redsys",
+                    type: "POST",
+                    data: JSON.stringify(msg),
+                    dataType: "json",
+                    contentType: "application/json; charset=utf-8",
+                    success: function(data){
+                        console.log("Done!");
+                        console.log(data);
+                        $("#respuesta").text(JSON.stringify(data.result, null, 4));
+                    },
+                    fail: function(msg) {
+                        alert("FAIL");
+                        console.log(msg);
+                    }
+                });
+            return false;
+            });
+        </script>
+    </body>
+</html>
